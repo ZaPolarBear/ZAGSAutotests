@@ -4,6 +4,8 @@ import eu.senla.components.driver.DriverSingleton;
 import eu.senla.components.pages.ApplicationAdministrationPage;
 import eu.senla.components.pages.HomePage;
 import eu.senla.components.util.TestData;
+import io.qameta.allure.Step;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Slf4j
 class AdminApplicationTest {
 
     private ChromeDriver driver;
@@ -36,9 +39,11 @@ class AdminApplicationTest {
         DriverSingleton.quit();
     }
 
+    @Step("Создание заявки на регистрацию брака")
     private void createMarriageApplicationAsUser() {
         driver.get(TestData.TARGET_URL);
 
+        log.info("Создание заявки на регистрацию брака");
         new HomePage(driver)
                 .clickLogin()
                 .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
@@ -54,8 +59,11 @@ class AdminApplicationTest {
                 .submit();
     }
 
+    @Step("Вход в панель администрирования")
     private ApplicationAdministrationPage loginAsAdmin() {
         driver.get(TestData.TARGET_URL);
+
+        log.info("Вход в панель администрирования");
 
         return new HomePage(driver)
                 .clickLoginAsAdmin()
@@ -75,6 +83,8 @@ class AdminApplicationTest {
     void newlyCreatedApplicationIsVisible() {
         createMarriageApplicationAsUser();
         ApplicationAdministrationPage admin = loginAsAdmin();
+
+        log.info("Проверка видимости заявок");
 
         assertFalse(admin.isEmpty(), "Ожидалась хотя бы одна заявка, но таблица пуста");
     }

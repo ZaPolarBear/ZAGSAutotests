@@ -1,5 +1,8 @@
 package eu.senla.components.util;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class TestData {
 
     public static final String USERNAME = "user";
@@ -11,9 +14,12 @@ public class TestData {
     public static final String VALID_MIDDLENAME = "Иванович";
     public static final String VALID_PHONE_NUMBER = "1723727";
     public static final String VALID_DATE = "15092026";
+    public static final String VALID_API_DATE = "2026-09-15";
     public static final String VALID_GENDER = "Муж";
     public static final String VALID_PASSPORT = "PS1234";
     public static final String VALID_ADDRESS = "ул. Иванович д. 3 кв. 7";
+    public static final String VALID_PERSON_ADDRESS = "г. Минск, ул. Ленина, д. 1";
+    public static final String VALID_CITIZEN_ADDRESS = "г. Минск, ул. Ленина, д. 1";
 
     public static final String MARRIAGE_PARTNER_MIDDLENAME = "Ивановна";
 

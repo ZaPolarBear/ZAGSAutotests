@@ -1,6 +1,5 @@
 package eu.senla.components.pages;
 
-import org.jspecify.annotations.NonNull;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -32,12 +31,13 @@ public class AdminRegistrationPage extends BasePage {
         super(driver);
     }
 
-    public AdminRegistrationPage fillForm(String surname,
-                                          String firstname,
-                                          String middlename,
-                                          String phone,
-                                          String passport,
-                                          String birthDate) {
+    public AdminRegistrationPage fillForm(
+            String surname,
+            String firstname,
+            String middlename,
+            String phone,
+            String passport,
+            String birthDate) {
         surnameField.sendKeys(surname);
         firstnameField.sendKeys(firstname);
         middlenameField.sendKeys(middlename);

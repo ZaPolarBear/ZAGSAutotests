@@ -6,6 +6,7 @@ import eu.senla.components.pages.CitizenDataPage;
 import eu.senla.components.pages.HomePage;
 import eu.senla.components.pages.service.BirthServiceDataPage;
 import eu.senla.components.util.TestData;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ApplicationRegistrationTest {
 
@@ -41,6 +43,8 @@ class ApplicationRegistrationTest {
     @Test
     @DisplayName("Регистрация брака")
     void marriageRegistration() {
+        log.info("Создание новой заявки регистрации брака");
+
         ApplicationStatusPage status = new HomePage(driver)
                 .clickLogin()
                 .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
@@ -62,6 +66,8 @@ class ApplicationRegistrationTest {
     @Test
     @DisplayName("Регистрация рождения")
     void birthRegistration() {
+        log.info("Создание новой заявки регистрации рождения");
+
         CitizenDataPage<BirthServiceDataPage> citizenStep = new HomePage(driver)
                 .clickLogin()
                 .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
@@ -84,6 +90,8 @@ class ApplicationRegistrationTest {
     @Test
     @DisplayName("Регистрация смерти")
     void deathRegistration() {
+        log.info("Создание новой заявки регистрации смерти");
+
         ApplicationStatusPage status = new HomePage(driver)
                 .clickLogin()
                 .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
@@ -103,6 +111,8 @@ class ApplicationRegistrationTest {
     @Test
     @DisplayName("Обновление статуса заявки и создание новой")
     void refreshAndCreateNewApplication() {
+        log.info("Создание новой заявки");
+
         ApplicationStatusPage status = new HomePage(driver)
                 .clickLogin()
                 .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
@@ -115,9 +125,13 @@ class ApplicationRegistrationTest {
                 .fillForm(TestData.DEATH_DATE, TestData.DEATH_PLACE)
                 .submit();
 
+        log.info("Обновление страницы с готовой заявкой");
+
         status.refresh();
         assertTrue(status.isUpdateButtonEnabled());
         assertTrue(status.thankYouMessage().contains("Спасибо за обращение"));
+
+        log.info("Переход на страницу создания новой заявки");
 
         status.createNewApplication();
     }
