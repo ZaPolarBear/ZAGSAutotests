@@ -7,10 +7,17 @@ import eu.senla.components.dto.UserResponse;
 import eu.senla.components.util.TestData;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.apache.hc.core5.http.HttpStatus;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -45,16 +52,22 @@ class ApplicationStatusApiTest {
 
         String body = raw.asPrettyString();
 
-        assertEquals(200, raw.statusCode(),
-                "Ожидался 200, получен " + raw.statusCode() + " | тело:\n" + body);
+        assertEquals(
+                HttpStatus.SC_OK, raw.statusCode(),
+                "Ожидался 200, получен %s | тело:\n %s".formatted(+raw.statusCode(), body)
+                    );
 
-        assertTrue(raw.contentType().contains("application/json"),
-                "Ожидался JSON, получен: " + raw.contentType());
+        assertTrue(
+                raw.contentType().contains("application/json"),
+                "Ожидался JSON, получен: %s".formatted(raw.contentType())
+                  );
 
         String code = raw.jsonPath().getString("code");
         if (code != null) {
-            assertNotEquals("error", code.toLowerCase(),
-                    "Сервер вернул бизнес-ошибку при 2xx:\n" + body);
+            assertNotEquals(
+                    "error", code.toLowerCase(),
+                    "Сервер вернул бизнес-ошибку при 2xx:\n %s".formatted(body)
+                           );
         }
     }
 
@@ -66,18 +79,26 @@ class ApplicationStatusApiTest {
         ApplicationStatusResponse status = api.getApplicationStatus(id);
 
         assertNotNull(status, "Ответ не должен быть null");
-        assertNotNull(status.getRequestId(),
-                "requestId( должен быть заполнен для существующей заявки");
+        assertNotNull(
+                status.getRequestId(),
+                "requestId( должен быть заполнен для существующей заявки"
+                     );
         assertTrue(!status.getRequestId().isBlank());
 
-        assertNotNull(status.getData().getStatusofapplication(),
-                "statusofapplication не должен быть null");
-        assertTrue(status.getData().getStatusofapplication().toLowerCase().contains("consider"),
+        assertNotNull(
+                status.getData().getStatusofapplication(),
+                "statusofapplication не должен быть null"
+                     );
+        assertTrue(
+                status.getData().getStatusofapplication().toLowerCase().contains("consider"),
                 "По ТЗ новая заявка получает статус 'under consideration', получено: "
-                        + status.getData().getStatusofapplication());
+                        + status.getData().getStatusofapplication()
+                  );
 
-        assertNotNull(status.getData().getDateofapplication(),
-                "dateofapplication должен быть заполнен");
+        assertNotNull(
+                status.getData().getDateofapplication(),
+                "dateofapplication должен быть заполнен"
+                     );
     }
 
     @Test
@@ -86,8 +107,10 @@ class ApplicationStatusApiTest {
         long id = createMarriageApplication();
         ApplicationStatusResponse status = api.getApplicationStatus(id);
 
-        assertNotNull(status,
-                "GET не вернул заявку");
+        assertNotNull(
+                status,
+                "GET не вернул заявку"
+                     );
     }
 
     @Test
@@ -104,12 +127,14 @@ class ApplicationStatusApiTest {
                 .extract()
                 .statusCode();
 
-        assertEquals(500, status,
-                "Ожидался 500 для нечислового id, получен: " + status);
+        assertEquals(
+                HttpStatus.SC_CLIENT_ERROR, status,
+                "Ожидался 400 для нечислового id, получен: %s".formatted(status)
+                    );
     }
 
     @Test
-    @DisplayName("Без basic-auth → 401/403")
+    @DisplayName("Без basic-auth → 401")
     void unauthorizedRequestIsRejected() {
         long id = createMarriageApplication();
 
@@ -123,7 +148,9 @@ class ApplicationStatusApiTest {
                 .extract()
                 .statusCode();
 
-        assertTrue(status == 401 || status == 403,
-                "Ожидался 401/403 без авторизации, получен: " + status);
+        assertEquals(
+                HttpStatus.SC_UNAUTHORIZED, status,
+                "Ожидался 401 без авторизации, получен: %s".formatted(status)
+                    );
     }
 }

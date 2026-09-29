@@ -22,6 +22,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.16")
     runtimeOnly("org.slf4j:slf4j-simple:2.0.16")
 
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")
     implementation("org.seleniumhq.selenium:selenium-java:4.47.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")

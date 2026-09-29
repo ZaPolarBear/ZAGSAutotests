@@ -3,25 +3,19 @@ package api;
 import api.factory.UserRequestFactory;
 import eu.senla.components.dto.UserRequest;
 import eu.senla.components.dto.UserResponse;
-import eu.senla.components.util.ApplicationMode;
 import eu.senla.components.util.TestData;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
 import io.restassured.response.Response;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Epic("ЗАГС API")
-@Feature("Регистрация брака")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MarriageApiTest {
 
@@ -30,32 +24,6 @@ class MarriageApiTest {
     @BeforeAll
     void setUp() {
         api = new UserApiClient(TestData.USERNAME, TestData.PASSWORD);
-    }
-
-    private UserRequest buildMarriageRequest() {
-        return UserRequest.builder()
-                .mode(ApplicationMode.MARRIAGE)
-                .personalLastName(TestData.VALID_SURNAME)
-                .personalFirstName(TestData.VALID_FIRSTNAME)
-                .personalMiddleName(TestData.VALID_MIDDLENAME)
-                .personalPhoneNumber(TestData.VALID_PHONE_NUMBER)
-                .personalNumberOfPassport(TestData.VALID_PASSPORT)
-                .personalAddress(TestData.VALID_ADDRESS)
-                .citizenLastName(TestData.VALID_SURNAME)
-                .citizenFirstName(TestData.VALID_FIRSTNAME)
-                .citizenMiddleName(TestData.VALID_MIDDLENAME)
-                .citizenBirthDate(TestData.VALID_DATE)
-                .citizenNumberOfPassport(TestData.VALID_PASSPORT)
-                .citizenGender(TestData.VALID_GENDER)
-                .citizenAddress(TestData.VALID_ADDRESS)
-                .dateOfMarriage(TestData.VALID_DATE)
-                .newLastName(TestData.VALID_SURNAME)
-                .anotherPersonLastName(TestData.VALID_SURNAME)
-                .anotherPersonFirstName(TestData.VALID_FIRSTNAME)
-                .anotherPersonMiddleName(TestData.MARRIAGE_PARTNER_MIDDLENAME)
-                .birthOfAnotherPerson(TestData.VALID_DATE)
-                .anotherPersonPassport(TestData.VALID_PASSPORT)
-                .build();
     }
 
     @Test
@@ -71,7 +39,7 @@ class MarriageApiTest {
     }
 
     @Test
-    @DisplayName("POST /sendUserRequest отвечает 200/201 и JSON")
+    @DisplayName("POST /sendUserRequest отвечает 200 и JSON")
     void responseHasCorrectHttpStatusAndContentType() {
         UserRequest request = UserRequestFactory.marriage();
 
@@ -84,11 +52,15 @@ class MarriageApiTest {
                 .post(UserApiClient.SEND_USER_REQUEST);
 
         int status = raw.statusCode();
-        assertTrue(status == 200 || status == 201,
-                "Ожидался 200 или 201, получен: " + status + " | тело: " + raw.asString());
+        assertEquals(
+                HttpStatus.SC_OK,
+                status, "Ожидался 200, получен: %s | тело: %s".formatted(status, raw.asString())
+                    );
 
-        assertTrue(raw.contentType().contains("application/json"),
-                "Ожидался JSON, получен: " + raw.contentType());
+        assertTrue(
+                raw.contentType().contains("application/json"),
+                "Ожидался JSON, получен: " + raw.contentType()
+                  );
     }
 
     @Test
@@ -105,31 +77,33 @@ class MarriageApiTest {
                 .extract()
                 .statusCode();
 
-        assertTrue(status >= 400 && status < 500,
-                "Ожидалась клиентская ошибка 4xx, получен: " + status);
+
+        assertEquals(HttpStatus.SC_BAD_REQUEST, status, "Ожидалась клиентская ошибка 4xx, получен: " + status);
     }
 
     @Test
-    @DisplayName("Отсутствие basic-auth → 401/403")
+    @DisplayName("Отсутствие basic-auth → 401")
     void unauthorizedRequestIsRejected() {
         int status = given()
                 .baseUri(TestData.TARGET_URL)
                 .contentType("application/json")
-                .body(buildMarriageRequest())
+                .body(UserRequestFactory.marriage())
                 .when()
                 .post(UserApiClient.SEND_USER_REQUEST)
                 .then()
                 .extract()
                 .statusCode();
 
-        assertTrue(status == 401 || status == 403,
-                "Ожидался 401/403 без авторизации, получен: " + status);
+        assertEquals(
+                HttpStatus.SC_UNAUTHORIZED, status,
+                "Ожидался 401 без авторизации, получен: %s".formatted(status)
+                    );
     }
 
     @Test
     @DisplayName("Невалидный mode → 4xx")
     void invalidModeIsRejected() {
-        UserRequest bad = buildMarriageRequest();
+        UserRequest bad = UserRequestFactory.marriage();
         bad.setMode("SOMETHING_ELSE");
 
         int status = given()
@@ -143,7 +117,9 @@ class MarriageApiTest {
                 .extract()
                 .statusCode();
 
-        assertTrue(status >= 400 && status < 500,
-                "Ожидалась 4xx на невалидный mode, получен: " + status);
+        assertEquals(
+                HttpStatus.SC_BAD_REQUEST, status,
+                "Ожидалась 4xx на невалидный mode, получен: %s".formatted(status)
+                    );
     }
 }
