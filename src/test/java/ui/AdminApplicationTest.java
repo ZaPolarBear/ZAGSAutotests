@@ -1,9 +1,13 @@
 package ui;
 
+import eu.senla.components.data.ApplicationData;
+import eu.senla.components.data.ApplicationRow;
 import eu.senla.components.driver.DriverSingleton;
 import eu.senla.components.pages.ApplicationAdministrationPage;
+import eu.senla.components.pages.ApplicationStatusPage;
 import eu.senla.components.pages.HomePage;
 import eu.senla.components.util.TestData;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,8 +17,11 @@ import org.junit.jupiter.api.TestInstance;
 import org.openqa.selenium.UsernameAndPassword;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Slf4j
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AdminApplicationTest {
 
@@ -36,22 +43,37 @@ class AdminApplicationTest {
         DriverSingleton.quit();
     }
 
-    private void createMarriageApplicationAsUser() {
+    private ApplicationData createMarriageApplicationAsUser() {
         driver.get(TestData.TARGET_URL);
 
-        new HomePage(driver)
+        ApplicationStatusPage statusPage = new HomePage(driver)
                 .clickLogin()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS)
+                .fillForm(
+                        TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
+                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS
+                         )
                 .submit()
                 .selectMarriage()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS)
+                .fillForm(
+                        TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
+                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS
+                         )
                 .submit()
-                .fillForm(TestData.VALID_DATE, TestData.VALID_SURNAME, TestData.VALID_SURNAME,
+                .fillForm(
+                        TestData.VALID_DATE, TestData.VALID_SURNAME, TestData.VALID_SURNAME,
                         TestData.VALID_FIRSTNAME, TestData.MARRIAGE_PARTNER_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT)
+                        TestData.VALID_DATE, TestData.VALID_PASSPORT
+                         )
                 .submit();
+
+        statusPage.waitForThankYouMessage();
+
+        return new ApplicationData(
+                TestData.VALID_SURNAME,
+                TestData.VALID_FIRSTNAME,
+                TestData.VALID_MIDDLENAME,
+                TestData.VALID_PASSPORT
+        );
     }
 
     private ApplicationAdministrationPage loginAsAdmin() {
@@ -71,11 +93,27 @@ class AdminApplicationTest {
     }
 
     @Test
-    @DisplayName("Администратор видит созданную пользователем заявку в таблице")
-    void newlyCreatedApplicationIsVisible() {
-        createMarriageApplicationAsUser();
-        ApplicationAdministrationPage admin = loginAsAdmin();
+    @DisplayName("Созданная пользователем заявка о браке появляется в админской таблице")
+    void createdMarriageApplicationAppearsInAdminTable() {
+        ApplicationAdministrationPage admin = loginAsAdmin()
+                .waitUntilOpened()
+                .waitUntilRowsLoaded();
 
-        assertFalse(admin.isEmpty(), "Ожидалась хотя бы одна заявка, но таблица пуста");
+        int lastId = admin.getMaxApplicationId();
+        admin.close();
+
+        createMarriageApplicationAsUser();
+
+        admin = loginAsAdmin()
+                .waitUntilOpened()
+                .waitUntilRowsLoaded()
+                .waitUntilTopIdGreaterThan(lastId);
+
+        ApplicationRow latest = admin.topRow();
+        assertAll(
+                () -> assertTrue(latest.idAsInt() > lastId, "id должен быть > " + lastId),
+                () -> assertTrue(latest.isMarriageCertificate(), "тип: " + latest.type()),
+                () -> assertEquals("На рассмотрении", latest.status())
+                 );
     }
 }

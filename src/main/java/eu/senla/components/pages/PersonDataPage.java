@@ -4,6 +4,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
+import java.util.List;
+
 public class PersonDataPage extends BasePage {
 
     @FindBy(css = "input[placeholder*='Введите фамилию']")
@@ -29,6 +31,21 @@ public class PersonDataPage extends BasePage {
 
     public PersonDataPage(WebDriver driver) {
         super(driver);
+    }
+
+    public boolean isOpened() {
+        return surnameField.isDisplayed()
+                && firstnameField.isDisplayed()
+                && nextButton.isDisplayed();
+    }
+
+    public boolean isFormEmpty() {
+        List<WebElement> fields = List.of(
+                surnameField, firstnameField, middlenameField,
+                phoneField, passportField, addressField);
+        return fields.stream()
+                .map(f -> f.getAttribute("value"))
+                .allMatch(v -> v == null || v.isEmpty());
     }
 
     public PersonDataPage fillForm(

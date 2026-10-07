@@ -2,8 +2,8 @@ package eu.senla.components.util;
 
 public class TestData {
 
-    public static final String USERNAME = "user";
-    public static final String PASSWORD = "senlatest";
+    public static final String USERNAME = System.getenv("APP_USERNAME");
+    public static final String PASSWORD = System.getenv("APP_PASSWORD");
     public static final String TARGET_URL = "https://regoffice.senla.eu/";
 
     public static final String VALID_SURNAME = "Иванов";

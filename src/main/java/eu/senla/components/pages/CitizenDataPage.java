@@ -1,37 +1,27 @@
 package eu.senla.components.pages;
 
 import eu.senla.components.pages.service.ServiceDataPage;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.function.Supplier;
 
 public class CitizenDataPage<T extends ServiceDataPage> extends BasePage {
 
-    @FindBy(id = "TextInputField-7")
-    private WebElement surnameField;
+    private static final By SURNAME = Locators.byLabel("Фамилия");
+    private static final By FIRSTNAME = Locators.byLabel("Имя");
+    private static final By MIDDLENAME = Locators.byLabel("Отчество");
+    private static final By BIRTHDATE = Locators.byLabel("Дата рождения");
+    private static final By PASSPORT = Locators.byLabel("Номер паспорта");
+    private static final By GENDER = Locators.byLabel("Пол");
+    private static final By ADDRESS = Locators.byPlaceholder("Введите адрес прописки");
+    private static final By NEXT = Locators.nextButton();
 
-    @FindBy(id = "TextInputField-8")
-    private WebElement firstnameField;
-
-    @FindBy(id = "TextInputField-9")
-    private WebElement middlenameField;
-
-    @FindBy(id = "TextInputField-10")
-    private WebElement birthDateField;
-
-    @FindBy(id = "TextInputField-11")
-    private WebElement passportField;
-
-    @FindBy(id = "TextInputField-12")
-    private WebElement genderField;
-
-    @FindBy(id = "TextInputField-13")
-    private WebElement addressField;
-
-    @FindBy(css = "button:has(svg[data-icon='arrow-right'])")
-    private WebElement nextButton;
+    private static final Duration TIMEOUT = Duration.ofSeconds(10);
 
     private final Supplier<T> nextPageFactory;
 
@@ -40,25 +30,35 @@ public class CitizenDataPage<T extends ServiceDataPage> extends BasePage {
         this.nextPageFactory = nextPageFactory;
     }
 
-    public CitizenDataPage<T> fillForm(String surname,
-                                       String firstname,
-                                       String middlename,
-                                       String birthDate,
-                                       String passport,
-                                       String gender,
-                                       String address) {
-        surnameField.sendKeys(surname);
-        firstnameField.sendKeys(firstname);
-        middlenameField.sendKeys(middlename);
-        birthDateField.sendKeys(birthDate);
-        passportField.sendKeys(passport);
-        genderField.sendKeys(gender);
-        addressField.sendKeys(address);
+    public CitizenDataPage<T> fillForm(
+            String surname,
+            String firstname,
+            String middlename,
+            String birthDate,
+            String passport,
+            String gender,
+            String address) {
+        type(SURNAME, surname);
+        type(FIRSTNAME, firstname);
+        type(MIDDLENAME, middlename);
+        type(BIRTHDATE, birthDate);
+        type(PASSPORT, passport);
+        type(GENDER, gender);
+        type(ADDRESS, address);
         return this;
     }
 
     public T submit() {
-        nextButton.click();
+        new WebDriverWait(driver, TIMEOUT)
+                .until(ExpectedConditions.elementToBeClickable(NEXT))
+                .click();
         return nextPageFactory.get();
+    }
+
+    private void type(By locator, String value) {
+        WebElement field = new WebDriverWait(driver, TIMEOUT)
+                .until(ExpectedConditions.visibilityOfElementLocated(locator));
+        field.clear();
+        field.sendKeys(value);
     }
 }

@@ -26,3 +26,14 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.withType<Test>().configureEach {
+    environment(
+        "APP_USERNAME",
+        System.getenv("APP_USERNAME") ?: project.findProperty("APP_USERNAME") ?: ""
+    )
+    environment(
+        "APP_PASSWORD",
+        System.getenv("APP_PASSWORD") ?: project.findProperty("APP_PASSWORD") ?: ""
+    )
+}
