@@ -1,13 +1,16 @@
 package ui;
 
+import api.factory.UserRequestFactory;
 import eu.senla.components.data.ApplicationData;
 import eu.senla.components.data.ApplicationRow;
 import eu.senla.components.driver.DriverSingleton;
 import eu.senla.components.pages.ApplicationAdministrationPage;
 import eu.senla.components.pages.ApplicationStatusPage;
 import eu.senla.components.pages.HomePage;
+import eu.senla.components.util.Gender;
 import eu.senla.components.util.TestData;
 import lombok.extern.slf4j.Slf4j;
+import io.qameta.allure.Step;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,51 +46,47 @@ class AdminApplicationTest {
         DriverSingleton.quit();
     }
 
-    private ApplicationData createMarriageApplicationAsUser() {
+    @Step("Создание заявки на регистрацию брака")
+    private void createMarriageApplicationAsUser() {
         driver.get(TestData.TARGET_URL);
 
         ApplicationStatusPage statusPage = new HomePage(driver)
                 .clickLogin()
                 .fillForm(
-                        TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.phone(), UserRequestFactory.passport(), UserRequestFactory.address()
                          )
                 .submit()
                 .selectMarriage()
                 .fillForm(
-                        TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
+                        Gender.MALE, UserRequestFactory.address()
                          )
                 .submit()
                 .fillForm(
-                        TestData.VALID_DATE, TestData.VALID_SURNAME, TestData.VALID_SURNAME,
-                        TestData.VALID_FIRSTNAME, TestData.MARRIAGE_PARTNER_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT
+                        UserRequestFactory.inputDate(UserRequestFactory.pastDate()), UserRequestFactory.surname(),
+                        UserRequestFactory.surname(),
+                        UserRequestFactory.firstname(), UserRequestFactory.femaleMiddlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport()
                          )
                 .submit();
 
         statusPage.waitForThankYouMessage();
-
-        return new ApplicationData(
-                TestData.VALID_SURNAME,
-                TestData.VALID_FIRSTNAME,
-                TestData.VALID_MIDDLENAME,
-                TestData.VALID_PASSPORT
-        );
     }
 
+    @Step("Вход в панель администрирования")
     private ApplicationAdministrationPage loginAsAdmin() {
         driver.get(TestData.TARGET_URL);
+
+        log.info("Вход в панель администрирования");
 
         return new HomePage(driver)
                 .clickLoginAsAdmin()
                 .fillForm(
-                        TestData.ADMIN_SURNAME,
-                        TestData.ADMIN_FIRSTNAME,
-                        TestData.ADMIN_MIDDLENAME,
-                        TestData.ADMIN_PHONE,
-                        TestData.ADMIN_PASSPORT,
-                        TestData.ADMIN_BIRTH_DATE
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.phone(), UserRequestFactory.passport(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate())
                          )
                 .submit();
     }
