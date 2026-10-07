@@ -1,5 +1,6 @@
 package ui;
 
+import api.factory.UserRequestFactory;
 import eu.senla.components.data.ApplicationData;
 import eu.senla.components.data.ApplicationRow;
 import eu.senla.components.driver.DriverSingleton;
@@ -45,37 +46,32 @@ class AdminApplicationTest {
     }
 
     @Step("Создание заявки на регистрацию брака")
-    private ApplicationData createMarriageApplicationAsUser() {
+    private void createMarriageApplicationAsUser() {
         driver.get(TestData.TARGET_URL);
 
         ApplicationStatusPage statusPage = new HomePage(driver)
                 .clickLogin()
                 .fillForm(
-                        TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.phone(), UserRequestFactory.passport(), UserRequestFactory.address()
                          )
                 .submit()
                 .selectMarriage()
                 .fillForm(
-                        TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
+                        TestData.VALID_GENDER, UserRequestFactory.address()
                          )
                 .submit()
                 .fillForm(
-                        TestData.VALID_DATE, TestData.VALID_SURNAME, TestData.VALID_SURNAME,
-                        TestData.VALID_FIRSTNAME, TestData.MARRIAGE_PARTNER_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT
+                        UserRequestFactory.inputDate(UserRequestFactory.pastDate()), UserRequestFactory.surname(),
+                        UserRequestFactory.surname(),
+                        UserRequestFactory.firstname(), UserRequestFactory.femaleMiddlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport()
                          )
                 .submit();
 
         statusPage.waitForThankYouMessage();
-
-        return new ApplicationData(
-                TestData.VALID_SURNAME,
-                TestData.VALID_FIRSTNAME,
-                TestData.VALID_MIDDLENAME,
-                TestData.VALID_PASSPORT
-        );
     }
 
     @Step("Вход в панель администрирования")
@@ -87,12 +83,9 @@ class AdminApplicationTest {
         return new HomePage(driver)
                 .clickLoginAsAdmin()
                 .fillForm(
-                        TestData.ADMIN_SURNAME,
-                        TestData.ADMIN_FIRSTNAME,
-                        TestData.ADMIN_MIDDLENAME,
-                        TestData.ADMIN_PHONE,
-                        TestData.ADMIN_PASSPORT,
-                        TestData.ADMIN_BIRTH_DATE
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.phone(), UserRequestFactory.passport(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate())
                          )
                 .submit();
     }

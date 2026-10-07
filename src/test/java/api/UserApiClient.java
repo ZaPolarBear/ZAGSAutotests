@@ -14,6 +14,9 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class UserApiClient {
 
@@ -34,15 +37,31 @@ public class UserApiClient {
 
     @Step("POST /sendUserRequest — создание заявки (mode={request.mode})")
     public UserResponse sendUserRequest(UserRequest request) {
-        return given()
+        Response raw = given()
                 .spec(spec)
                 .body(request)
                 .when()
                 .post(SEND_USER_REQUEST)
                 .then()
                 .log().all()
-                .extract()
-                .as(UserResponse.class);
+                .extract().response();
+
+        int status = raw.statusCode();
+        String body = raw.asString();
+
+        assertEquals(200, status);
+
+        UserResponse response;
+        try {
+            response = raw.as(UserResponse.class);
+        } catch (Exception e) {
+            throw new AssertionError(
+                    "Не удалось десериализовать UserResponse (HTTP " + status + "). Тело: " + body, e);
+        }
+
+        assertNotNull(response, "Пустой ответ. Тело: " + body);
+        assertNotNull(response.getData());
+        return response;
     }
 
     @Step("GET /getApplStatus/{applicationId} — получить статус заявки id={applicationId}")
@@ -74,19 +93,8 @@ public class UserApiClient {
         return response.as(ApplicationStatusResponse.class);
     }
 
-    @Attachment(value = "request.json", type = "application/json")
-    private String attachRequest(UserRequest request) {
-        try {
-            return new com.fasterxml.jackson.databind.ObjectMapper()
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(request);
-        } catch (Exception e) {
-            return String.valueOf(request);
-        }
-    }
-
     @Attachment(value = "response.json", type = "application/json")
-    private String attachResponse(Response response) {
-        return response.asPrettyString();
+    private void attachResponse(Response response) {
+        response.asPrettyString();
     }
 }

@@ -3,6 +3,7 @@ package eu.senla.components.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.Getter;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -11,7 +12,8 @@ public class UserResponse {
     private String requestId;
     private UserResponseData data;
 
-    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @Getter
     public static class UserResponseData {
         @JsonProperty("applicantid")
         private Long applicantId;
@@ -21,8 +23,5 @@ public class UserResponse {
         private Long citizenId;
         @JsonProperty("merrigecertificateid")
         private Long marriageCertificateId;
-
-        public UserResponseData() {
-        }
     }
 }

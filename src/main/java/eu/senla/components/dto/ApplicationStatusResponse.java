@@ -3,6 +3,8 @@ package eu.senla.components.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
+import java.time.Instant;
+
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApplicationStatusResponse {
@@ -13,7 +15,7 @@ public class ApplicationStatusResponse {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ApplicationStatusResponseData {
-        private String dateofapplication;
+        private Instant dateofapplication;
         private String kindofapplication;
         private String statusofapplication;
     }

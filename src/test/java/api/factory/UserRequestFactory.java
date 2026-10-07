@@ -5,11 +5,10 @@ import eu.senla.components.dto.UserRequest;
 import eu.senla.components.util.ApplicationMode;
 import eu.senla.components.util.Gender;
 
-import java.time.ZoneId;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class UserRequestFactory {
 
@@ -17,6 +16,7 @@ public class UserRequestFactory {
 
     private static final Faker RU = new Faker(new Locale("ru"));
     private static final Faker EN = new Faker(Locale.ENGLISH);
+    public static final String INPUT_DATE_FORMAT = "ddMMyyyy";
 
     private UserRequestFactory() {
     }
@@ -38,16 +38,16 @@ public class UserRequestFactory {
                 .citizenLastName(surname)
                 .citizenFirstName(firstname)
                 .citizenMiddleName(middlename)
-                .citizenBirthDate(isoDate(birthDate(18, 80)))
+                .citizenBirthDate(isoDate(birthDate()))
                 .citizenNumberOfPassport(passport())
                 .citizenGender(Gender.MALE)
                 .citizenAddress(address)
-                .dateOfMarriage(isoDate(futureDate(1, 60)))
+                .dateOfMarriage(isoDate(futureDate()))
                 .newLastName(surname)
                 .anotherPersonLastName(surname())
                 .anotherPersonFirstName(firstname())
                 .anotherPersonMiddleName(femaleMiddlename())
-                .birthOfAnotherPerson(isoDate(birthDate(18, 80)))
+                .birthOfAnotherPerson(isoDate(birthDate()))
                 .anotherPersonPassport(passport())
 
                 .build();
@@ -66,7 +66,7 @@ public class UserRequestFactory {
                 .citizenLastName(surname)
                 .citizenFirstName(firstname())
                 .citizenMiddleName(middlename())
-                .citizenBirthDate(isoDate(pastDate(0, 1)))
+                .citizenBirthDate(isoDate(pastDate()))
                 .citizenNumberOfPassport(passport())
                 .citizenGender(Gender.MALE)
                 .citizenAddress(address())
@@ -91,67 +91,68 @@ public class UserRequestFactory {
                 .citizenLastName(surname)
                 .citizenFirstName(firstname())
                 .citizenMiddleName(middlename())
-                .citizenBirthDate(isoDate(pastDate(60, 90)))
+                .citizenBirthDate(isoDate(pastDate()))
                 .citizenNumberOfPassport(passport())
                 .citizenGender(Gender.MALE)
                 .citizenAddress(address())
-                .deathDateOfDeath(isoDate(pastDate(0, 1)))
+                .deathDateOfDeath(isoDate(pastDate()))
                 .deathPlaceOfDeath(shortText(50))
                 .build();
     }
 
-    private static String surname() {
+    public static String surname() {
         return truncate(RU.name().lastName(), 100);
     }
 
-    private static String firstname() {
+    public static String firstname() {
         return truncate(RU.name().firstName(), 100);
     }
 
-    private static String middlename() {
+    public static String middlename() {
         return truncate(RU.name().nameWithMiddle().split("\\s+")[2], 100);
     }
 
-    private static String femaleMiddlename() {
+    public static String femaleMiddlename() {
         String male = middlename();
-        return truncate(male.replaceAll("ич$", "на").replaceAll("вич$", "вна"), 20);
+        return truncate(male.replaceAll("вич$", "вна").replaceAll("ич$", "на"), 20);
     }
 
-    private static String address() {
+    public static String address() {
         return truncate("г. " + RU.address().cityName()
                 + ", ул. " + RU.address().streetName()
                 + ", д. " + RU.address().buildingNumber(), 50);
     }
 
-    private static String phone() {
+    public static String phone() {
         return EN.numerify("###########");
     }
 
-    private static String passport() {
+    public static String passport() {
         return truncate(EN.letterify("??").toUpperCase() + EN.numerify("######"), 8);
     }
 
-    private static String shortText(int maxLength) {
+    public static String shortText(int maxLength) {
         return truncate(EN.lorem().word() + " " + EN.lorem().word(), maxLength);
     }
 
-    private static Date birthDate(int minAge, int maxAge) {
-        return RU.date().birthday(minAge, maxAge);
+    public static LocalDate birthDate() {
+        return LocalDate.now().minusYears(ThreadLocalRandom.current().nextInt(18, 80));
     }
 
-    private static Date pastDate(int minYearsAgo, int maxYearsAgo) {
-        return RU.date().past(maxYearsAgo, TimeUnit.DAYS);
+    public static LocalDate pastDate() {
+        return LocalDate.now().minusYears(ThreadLocalRandom.current().nextInt(1, 60));
     }
 
-    private static Date futureDate(int minYearsAhead, int maxYearsAhead) {
-        return RU.date().future(maxYearsAhead * 365, TimeUnit.DAYS);
+    public static LocalDate futureDate() {
+        return LocalDate.now().plusYears(ThreadLocalRandom.current().nextInt(1, 60));
     }
 
-    private static String isoDate(Date date) {
-        return date.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-                .format(ISO_DATE);
+    public static String inputDate(LocalDate date) {
+        return date.format(DateTimeFormatter.ofPattern(INPUT_DATE_FORMAT));
+    }
+
+    private static String isoDate(LocalDate date) {
+        return date.format(ISO_DATE);
     }
 
     private static String truncate(String s, int max) {

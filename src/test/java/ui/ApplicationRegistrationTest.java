@@ -1,5 +1,6 @@
 package ui;
 
+import api.factory.UserRequestFactory;
 import eu.senla.components.driver.DriverSingleton;
 import eu.senla.components.pages.ApplicationStatusPage;
 import eu.senla.components.pages.CitizenDataPage;
@@ -7,7 +8,8 @@ import eu.senla.components.pages.HomePage;
 import eu.senla.components.pages.PersonDataPage;
 import eu.senla.components.pages.service.BirthServiceDataPage;
 import eu.senla.components.util.TestData;
-import lombok.val;
+import io.qameta.allure.Step;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,16 +51,24 @@ class ApplicationRegistrationTest {
 
         ApplicationStatusPage status = new HomePage(driver)
                 .clickLogin()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS)
+                .fillForm(
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.phone(), UserRequestFactory.passport(), UserRequestFactory.address()
+                         )
                 .submit()
                 .selectMarriage()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS)
+                .fillForm(
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
+                        TestData.VALID_GENDER, UserRequestFactory.address()
+                         )
                 .submit()
-                .fillForm(TestData.VALID_DATE, TestData.VALID_SURNAME, TestData.VALID_SURNAME,
-                        TestData.VALID_FIRSTNAME, TestData.MARRIAGE_PARTNER_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT)
+                .fillForm(
+                        UserRequestFactory.inputDate(UserRequestFactory.pastDate()), UserRequestFactory.surname(),
+                        UserRequestFactory.surname(),
+                        UserRequestFactory.firstname(), UserRequestFactory.femaleMiddlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport()
+                         )
                 .submit();
 
         assertTrue(status.isUpdateButtonDisplayed());
@@ -72,17 +82,24 @@ class ApplicationRegistrationTest {
 
         CitizenDataPage<BirthServiceDataPage> citizenStep = new HomePage(driver)
                 .clickLogin()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS)
+                .fillForm(
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.phone(), UserRequestFactory.passport(), UserRequestFactory.address()
+                         )
                 .submit()
                 .selectBirth();
 
         ApplicationStatusPage status = citizenStep
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS)
+                .fillForm(
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
+                        TestData.VALID_GENDER, UserRequestFactory.address()
+                         )
                 .submit()
-                .fillForm(TestData.BIRTH_PLACE, TestData.MOTHER, TestData.FATHER,
-                        TestData.GRANDMOTHER, TestData.GRANDFATHER)
+                .fillForm(
+                        UserRequestFactory.address(), UserRequestFactory.firstname(), UserRequestFactory.firstname(),
+                        UserRequestFactory.firstname(), UserRequestFactory.firstname()
+                         )
                 .submit();
 
         assertTrue(status.isUpdateButtonDisplayed());
@@ -94,17 +111,7 @@ class ApplicationRegistrationTest {
     void deathRegistration() {
         log.info("Создание новой заявки регистрации смерти");
 
-        ApplicationStatusPage status = new HomePage(driver)
-                .clickLogin()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS)
-                .submit()
-                .selectDeath()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS)
-                .submit()
-                .fillForm(TestData.DEATH_DATE, TestData.DEATH_PLACE)
-                .submit();
+        ApplicationStatusPage status = createDeathApplication();
 
         assertTrue(status.isUpdateButtonDisplayed());
         assertTrue(status.thankYouMessage().contains("Спасибо за обращение"));
@@ -115,17 +122,7 @@ class ApplicationRegistrationTest {
     void refreshAndCreateNewApplication() {
         log.info("Создание новой заявки");
 
-        ApplicationStatusPage status = new HomePage(driver)
-                .clickLogin()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_PHONE_NUMBER, TestData.VALID_PASSPORT, TestData.VALID_ADDRESS)
-                .submit()
-                .selectDeath()
-                .fillForm(TestData.VALID_SURNAME, TestData.VALID_FIRSTNAME, TestData.VALID_MIDDLENAME,
-                        TestData.VALID_DATE, TestData.VALID_PASSPORT, TestData.VALID_GENDER, TestData.VALID_ADDRESS)
-                .submit()
-                .fillForm(TestData.DEATH_DATE, TestData.DEATH_PLACE)
-                .submit();
+        ApplicationStatusPage status = createDeathApplication();
 
         log.info("Обновление страницы с готовой заявкой");
 
@@ -135,10 +132,36 @@ class ApplicationRegistrationTest {
 
         PersonDataPage newApplication = status.createNewApplication();
 
-        assertAll("Создание новой заявки",
-                () -> assertTrue(newApplication.isOpened(),
-                        "Должна открыться страница ввода персональных данных"),
-                () -> assertTrue(newApplication.isFormEmpty(),
-                        "Форма новой заявки должна быть пустой"));
+        assertAll(
+                "Создание новой заявки",
+                () -> assertTrue(
+                        newApplication.isOpened(),
+                        "Должна открыться страница ввода персональных данных"
+                                ),
+                () -> assertTrue(
+                        newApplication.isFormEmpty(),
+                        "Форма новой заявки должна быть пустой"
+                                )
+                 );
+    }
+
+    @Step("Создание заявки на регистрацию смерти")
+    private ApplicationStatusPage createDeathApplication() {
+        return new HomePage(driver)
+                .clickLogin()
+                .fillForm(
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.phone(), UserRequestFactory.passport(), UserRequestFactory.address()
+                         )
+                .submit()
+                .selectDeath()
+                .fillForm(
+                        UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
+                        UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
+                        TestData.VALID_GENDER, UserRequestFactory.address()
+                         )
+                .submit()
+                .fillForm(UserRequestFactory.inputDate(UserRequestFactory.pastDate()), UserRequestFactory.address())
+                .submit();
     }
 }

@@ -64,7 +64,7 @@ class MarriageApiTest {
     }
 
     @Test
-    @DisplayName("Пустое тело запроса → 4xx")
+    @DisplayName("Пустое тело запроса → 400")
     void emptyBodyIsRejected() {
         int status = given()
                 .baseUri(TestData.TARGET_URL)
@@ -78,7 +78,7 @@ class MarriageApiTest {
                 .statusCode();
 
 
-        assertEquals(HttpStatus.SC_BAD_REQUEST, status, "Ожидалась клиентская ошибка 4xx, получен: " + status);
+        assertEquals(HttpStatus.SC_BAD_REQUEST, status, "Ожидалась клиентская ошибка 400, получен: " + status);
     }
 
     @Test
@@ -101,7 +101,7 @@ class MarriageApiTest {
     }
 
     @Test
-    @DisplayName("Невалидный mode → 4xx")
+    @DisplayName("Невалидный mode → 400")
     void invalidModeIsRejected() {
         UserRequest bad = UserRequestFactory.marriage();
         bad.setMode("SOMETHING_ELSE");
@@ -119,7 +119,7 @@ class MarriageApiTest {
 
         assertEquals(
                 HttpStatus.SC_BAD_REQUEST, status,
-                "Ожидалась 4xx на невалидный mode, получен: %s".formatted(status)
+                "Ожидалась 400 на невалидный mode, получен: %s".formatted(status)
                     );
     }
 }

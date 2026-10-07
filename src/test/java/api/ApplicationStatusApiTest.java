@@ -13,8 +13,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,7 +38,7 @@ class ApplicationStatusApiTest {
     private long createMarriageApplication() {
         UserRequest request = UserRequestFactory.marriage();
         UserResponse created = api.sendUserRequest(request);
-        assertNotNull(created.getData().getApplicationId(), "Создание заявки не вернуло id");
+        assertNotNull(created.getData().getApplicantId(), "Создание заявки не вернуло id");
         return created.getData().getApplicationId();
     }
 
@@ -72,45 +77,38 @@ class ApplicationStatusApiTest {
     }
 
     @Test
-    @DisplayName("Ответ содержит applicantId, kindofapplication=wedding и статус 'under consideration'")
+    @DisplayName("Ответ содержит kindofapplication=wedding, статус 'under consideration' и сегодняшнюю дату")
     void getStatusContainsExpectedFields() {
         long id = createMarriageApplication();
 
         ApplicationStatusResponse status = api.getApplicationStatus(id);
 
         assertNotNull(status, "Ответ не должен быть null");
-        assertNotNull(
-                status.getRequestId(),
-                "requestId( должен быть заполнен для существующей заявки"
-                     );
-        assertTrue(!status.getRequestId().isBlank());
+        assertNotNull(status.getData(), "Поле data не должно быть null");
 
-        assertNotNull(
-                status.getData().getStatusofapplication(),
-                "statusofapplication не должен быть null"
-                     );
-        assertTrue(
-                status.getData().getStatusofapplication().toLowerCase().contains("consider"),
-                "По ТЗ новая заявка получает статус 'under consideration', получено: "
-                        + status.getData().getStatusofapplication()
-                  );
+        ApplicationStatusResponse.ApplicationStatusResponseData data = status.getData();
 
-        assertNotNull(
-                status.getData().getDateofapplication(),
-                "dateofapplication должен быть заполнен"
-                     );
-    }
+        assertAll("Поля ответа getApplicationStatus",
+                () -> assertNotNull(status.getRequestId(),
+                        "requestId должен быть заполнен для существующей заявки"),
+                () -> assertFalse(status.getRequestId().isBlank(),
+                        "requestId не должен быть пустым"),
 
-    @Test
-    @DisplayName("Заявка, созданная через POST, доступна по своему id")
-    void createdApplicationIsRetrievableById() {
-        long id = createMarriageApplication();
-        ApplicationStatusResponse status = api.getApplicationStatus(id);
+                () -> assertEquals("Получение свидетельства о браке", data.getKindofapplication(),
+                        "Тип заявки должен быть 'wedding'"),
 
-        assertNotNull(
-                status,
-                "GET не вернул заявку"
-                     );
+                () -> assertEquals("under consideration",
+                        data.getStatusofapplication() == null
+                        ? null
+                        : data.getStatusofapplication().toLowerCase().trim(),
+                        "По ТЗ новая заявка получает статус 'under consideration', получено: "
+                                + data.getStatusofapplication()),
+
+                () -> assertEquals(
+                        LocalDate.now(),
+                        LocalDate.ofInstant(data.getDateofapplication(), ZoneId.systemDefault()),
+                        "dateofapplication должен совпадать с сегодняшней датой")
+                 );
     }
 
     @Test
