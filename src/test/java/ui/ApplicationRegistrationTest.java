@@ -7,6 +7,7 @@ import eu.senla.components.pages.CitizenDataPage;
 import eu.senla.components.pages.HomePage;
 import eu.senla.components.pages.PersonDataPage;
 import eu.senla.components.pages.service.BirthServiceDataPage;
+import eu.senla.components.util.Gender;
 import eu.senla.components.util.TestData;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +61,7 @@ class ApplicationRegistrationTest {
                 .fillForm(
                         UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
                         UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
-                        TestData.VALID_GENDER, UserRequestFactory.address()
+                        Gender.MALE, UserRequestFactory.address()
                          )
                 .submit()
                 .fillForm(
@@ -93,7 +94,7 @@ class ApplicationRegistrationTest {
                 .fillForm(
                         UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
                         UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
-                        TestData.VALID_GENDER, UserRequestFactory.address()
+                        Gender.MALE, UserRequestFactory.address()
                          )
                 .submit()
                 .fillForm(
@@ -158,7 +159,7 @@ class ApplicationRegistrationTest {
                 .fillForm(
                         UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
                         UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
-                        TestData.VALID_GENDER, UserRequestFactory.address()
+                        Gender.MALE, UserRequestFactory.address()
                          )
                 .submit()
                 .fillForm(UserRequestFactory.inputDate(UserRequestFactory.pastDate()), UserRequestFactory.address())
