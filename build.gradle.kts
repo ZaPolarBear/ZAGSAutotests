@@ -40,6 +40,7 @@ dependencies {
 
     testImplementation("io.rest-assured:rest-assured:${restAssuredVersion}")
     testImplementation("io.rest-assured:json-schema-validator:${restAssuredVersion}")
+    testImplementation("org.postgresql:postgresql:42.7.3")
 }
 
 allure {
@@ -59,6 +60,22 @@ tasks.test {
     environment(
         "APP_PASSWORD",
         System.getenv("APP_PASSWORD") ?: project.findProperty("APP_PASSWORD") ?: ""
+    )
+    environment(
+        "PG_USER",
+        System.getenv("PG_USER") ?: project.findProperty("PG_USER") ?: ""
+    )
+    environment(
+        "PG_ADDRESS",
+        System.getenv("PG_ADDRESS") ?: project.findProperty("PG_ADDRESS") ?: ""
+    )
+    environment(
+        "PG_PASSWORD",
+        System.getenv("PG_PASSWORD") ?: project.findProperty("PG_PASSWORD") ?: ""
+    )
+    environment(
+        "TARGET_URL",
+        System.getenv("TARGET_URL") ?: project.findProperty("TARGET_URL") ?: ""
     )
     jvmArgs(
         "-javaagent:${classpath.find { it.name.contains("aspectjweaver") }?.absolutePath}"

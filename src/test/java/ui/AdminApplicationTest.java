@@ -7,6 +7,7 @@ import eu.senla.components.driver.DriverSingleton;
 import eu.senla.components.pages.ApplicationAdministrationPage;
 import eu.senla.components.pages.ApplicationStatusPage;
 import eu.senla.components.pages.HomePage;
+import eu.senla.components.util.Gender;
 import eu.senla.components.util.TestData;
 import lombok.extern.slf4j.Slf4j;
 import io.qameta.allure.Step;
@@ -60,7 +61,7 @@ class AdminApplicationTest {
                 .fillForm(
                         UserRequestFactory.surname(), UserRequestFactory.firstname(), UserRequestFactory.middlename(),
                         UserRequestFactory.inputDate(UserRequestFactory.birthDate()), UserRequestFactory.passport(),
-                        TestData.VALID_GENDER, UserRequestFactory.address()
+                        Gender.MALE, UserRequestFactory.address()
                          )
                 .submit()
                 .fillForm(
