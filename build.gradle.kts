@@ -52,6 +52,14 @@ allure {
 tasks.test {
     useJUnitPlatform()
 
+    environment(
+        "APP_USERNAME",
+        System.getenv("APP_USERNAME") ?: project.findProperty("APP_USERNAME") ?: ""
+    )
+    environment(
+        "APP_PASSWORD",
+        System.getenv("APP_PASSWORD") ?: project.findProperty("APP_PASSWORD") ?: ""
+    )
     jvmArgs(
         "-javaagent:${classpath.find { it.name.contains("aspectjweaver") }?.absolutePath}"
     )

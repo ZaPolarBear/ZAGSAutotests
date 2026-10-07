@@ -1,31 +1,24 @@
 package eu.senla.components.pages;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 public class AdminRegistrationPage extends BasePage {
 
-    @FindBy(id = "TextInputField-1")
-    private WebElement surnameField;
+    private static final By SURNAME = Locators.byLabel("Фамилия");
+    private static final By FIRSTNAME = Locators.byLabel("Имя");
+    private static final By MIDDLENAME = Locators.byLabel("Отчество");
+    private static final By PHONE = Locators.byLabel("Телефон");
+    private static final By PASSPORT = Locators.byLabel("Номер паспорта");
+    private static final By BIRTHDATE = Locators.byLabel("Дата рождения");
+    private static final By NEXT = Locators.nextButton();
 
-    @FindBy(id = "TextInputField-2")
-    private WebElement firstnameField;
-
-    @FindBy(id = "TextInputField-3")
-    private WebElement middlenameField;
-
-    @FindBy(id = "TextInputField-4")
-    private WebElement phoneField;
-
-    @FindBy(id = "TextInputField-5")
-    private WebElement passportField;
-
-    @FindBy(id = "TextInputField-6")
-    private WebElement birthDateField;
-
-    @FindBy(css = "button:has(svg[data-icon='arrow-right'])")
-    private WebElement nextButton;
+    private static final Duration TIMEOUT = Duration.ofSeconds(10);
 
     public AdminRegistrationPage(WebDriver driver) {
         super(driver);
@@ -38,17 +31,26 @@ public class AdminRegistrationPage extends BasePage {
             String phone,
             String passport,
             String birthDate) {
-        surnameField.sendKeys(surname);
-        firstnameField.sendKeys(firstname);
-        middlenameField.sendKeys(middlename);
-        phoneField.sendKeys(phone);
-        passportField.sendKeys(passport);
-        birthDateField.sendKeys(birthDate);
+        type(SURNAME, surname);
+        type(FIRSTNAME, firstname);
+        type(MIDDLENAME, middlename);
+        type(PHONE, phone);
+        type(PASSPORT, passport);
+        type(BIRTHDATE, birthDate);
         return this;
     }
 
     public ApplicationAdministrationPage submit() {
-        nextButton.click();
+        new WebDriverWait(driver, TIMEOUT)
+                .until(ExpectedConditions.elementToBeClickable(NEXT))
+                .click();
         return new ApplicationAdministrationPage(driver);
+    }
+
+    private void type(By locator, String value) {
+        WebElement field = new WebDriverWait(driver, TIMEOUT)
+                .until(ExpectedConditions.visibilityOfElementLocated(locator));
+        field.clear();
+        field.sendKeys(value);
     }
 }

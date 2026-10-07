@@ -4,9 +4,10 @@ import eu.senla.components.driver.DriverSingleton;
 import eu.senla.components.pages.ApplicationStatusPage;
 import eu.senla.components.pages.CitizenDataPage;
 import eu.senla.components.pages.HomePage;
+import eu.senla.components.pages.PersonDataPage;
 import eu.senla.components.pages.service.BirthServiceDataPage;
 import eu.senla.components.util.TestData;
-import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.openqa.selenium.UsernameAndPassword;
 import org.openqa.selenium.chrome.ChromeDriver;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -131,8 +133,12 @@ class ApplicationRegistrationTest {
         assertTrue(status.isUpdateButtonEnabled());
         assertTrue(status.thankYouMessage().contains("Спасибо за обращение"));
 
-        log.info("Переход на страницу создания новой заявки");
+        PersonDataPage newApplication = status.createNewApplication();
 
-        status.createNewApplication();
+        assertAll("Создание новой заявки",
+                () -> assertTrue(newApplication.isOpened(),
+                        "Должна открыться страница ввода персональных данных"),
+                () -> assertTrue(newApplication.isFormEmpty(),
+                        "Форма новой заявки должна быть пустой"));
     }
 }
