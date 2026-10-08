@@ -38,7 +38,7 @@ class ApplicationStatusApiTest {
     private long createMarriageApplication() {
         UserRequest request = UserRequestFactory.marriage();
         UserResponse created = api.sendUserRequest(request);
-        assertNotNull(created.getData().getApplicantId(), "Создание заявки не вернуло id");
+        assertNotNull(created.getData().getApplicationId(), "Создание заявки не вернуло id");
         return created.getData().getApplicationId();
     }
 

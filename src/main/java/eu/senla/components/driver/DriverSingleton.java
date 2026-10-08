@@ -3,23 +3,25 @@ package eu.senla.components.driver;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.devtools.DevTools;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.time.Duration;
 
+import static eu.senla.components.util.TestData.envOr;
+
 public final class DriverSingleton {
 
     private static final ThreadLocal<WebDriver> DRIVER = new ThreadLocal<>();
 
-    private static final String  SELENOID_URL =
-            System.getProperty("SELENOID_URL", "http://selenoid:4444/wd/hub");
+    private static final String SELENOID_URL =
+            envOr("SELENOID_URL", "http://selenoid:4444/wd/hub");
     private static final boolean REMOTE =
-            Boolean.parseBoolean(System.getProperty("browser.remote", System.getenv("SELENOID_MODE")));
+            Boolean.parseBoolean(envOr("SELENOID_MODE", "false"));
 
-    private DriverSingleton() {}
+    private DriverSingleton() {
+    }
 
     public static WebDriver getInstance() {
         WebDriver current = DRIVER.get();

@@ -1,8 +1,11 @@
 package eu.senla.components.pages;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.AjaxElementLocatorFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
@@ -18,5 +21,12 @@ public abstract class BasePage {
         this.driver = driver;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS));
         PageFactory.initElements(new AjaxElementLocatorFactory(driver, TIMEOUT_SECONDS), this);
+    }
+
+    protected void type(By locator, String value) {
+        WebElement field = new WebDriverWait(driver, Duration.ofSeconds(TIMEOUT_SECONDS))
+                .until(ExpectedConditions.visibilityOfElementLocated(locator));
+        field.clear();
+        field.sendKeys(value);
     }
 }

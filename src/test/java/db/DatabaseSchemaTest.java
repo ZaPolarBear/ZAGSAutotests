@@ -15,9 +15,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.sql.Types;
 import java.util.UUID;
 
+import static eu.senla.components.util.TestData.env;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,9 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DatabaseSchemaTest {
 
-    private static final String URL = System.getenv("PG_ADDRESS");
-    private static final String USER = System.getenv("PG_USER");
-    private static final String PASSWORD = System.getenv("PG_PASSWORD");
+    private static final String URL = env("PG_ADDRESS");
+    private static final String USER = env("PG_USER");
+    private static final String PASSWORD = env("PG_PASSWORD");
 
     private Connection connection;
     private final UserApiClient api = new UserApiClient(TestData.USERNAME, TestData.PASSWORD);
@@ -127,67 +129,67 @@ class DatabaseSchemaTest {
     @Test
     @DisplayName("Схема отклоняет NOT NULL, FK и уникальные нарушения")
     void schemaRejectsInvalidInserts() {
-        assertAll(
-                "Ограничения схемы",
-                () -> assertThrows(
-                        SQLException.class, () -> {
-                            try (
-                                    PreparedStatement ps = connection.prepareStatement("""
-                                            INSERT INTO reg_office.applicants
-                                            (surname, name, middlename, passportnumber, phonenumber, registration_address)
-                                            VALUES (?, ?, ?, ?, ?, ?)""")
-                            ) {
-                                ps.setNull(1, Types.VARCHAR);
-                                ps.setString(2, UserRequestFactory.surname());
-                                ps.setString(3, UserRequestFactory.firstname());
-                                ps.setString(4, "P-" + UUID.randomUUID().toString().substring(0, 8));
-                                ps.setString(5, UserRequestFactory.phone());
-                                ps.setString(6, UserRequestFactory.address());
-                                ps.executeUpdate();
-                            }
-                        }, "NULL surname должен нарушать NOT NULL"
-                                  ),
+        assertAll("Ограничения схемы",
 
-                () -> assertThrows(
-                        SQLException.class, () -> {
-                            try (
-                                    PreparedStatement ps = connection.prepareStatement("""
-                                            INSERT INTO reg_office.applications
-                                            (citizenid, applicantid, kindofapplication, statusofapplication)
-                                            VALUES (?, ?, ?, ?)""")
-                            ) {
-                                ps.setLong(1, -1L);
-                                ps.setLong(2, -1L);
-                                ps.setString(3, "Получение свидетельства о браке");
-                                ps.setString(4, "under consideration");
-                                ps.executeUpdate();
-                            }
-                        }, "Несуществующий citizenid/applicantid должен нарушать FK"
-                                  ),
+                () -> assertSchemaRejects("NULL surname",
+                        () -> insertApplicant(null, uniquePassport())),
 
-                () -> assertThrows(
-                        SQLException.class, () -> {
-                            String dup = "P-DUP-" + UUID.randomUUID().toString().substring(0, 8);
-                            insertApplicant(dup);
-                            insertApplicant(dup);
-                        }, "Дубликат passportnumber должен нарушать UNIQUE"
-                                  )
+                () -> assertSchemaRejects("Несуществующий citizenid/applicantid", this::insertApplication),
+
+                () -> assertSchemaRejects("Дубликат passportnumber", () -> {
+                    String dup = uniquePassport();
+                    insertApplicant(UserRequestFactory.surname(), dup);
+                    insertApplicant(UserRequestFactory.surname(), dup);
+                })
                  );
     }
 
-    private void insertApplicant(String passport) throws SQLException {
-        try (
-                PreparedStatement ps = connection.prepareStatement("""
-                        INSERT INTO reg_office.applicants
-                        (surname, name, middlename, passportnumber, phonenumber, registration_address)
-                        VALUES (?, ?, ?, ?, ?, ?)""")
-        ) {
-            ps.setString(1, UserRequestFactory.surname());
+    private void assertSchemaRejects(String label, ThrowingRunnable block) throws SQLException {
+        Savepoint sp = connection.setSavepoint(label);
+        try {
+            assertThrows(SQLException.class, block::run, label);
+        } finally {
+            connection.rollback(sp);
+        }
+    }
+
+    @FunctionalInterface
+    private interface ThrowingRunnable {
+        void run() throws SQLException;
+    }
+
+    private static String uniquePassport() {
+        return "P-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    private void insertApplicant(String surname, String passport) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement("""
+            INSERT INTO reg_office.applicants
+            (surname, name, middlename, passportnumber, phonenumber, registration_address)
+            VALUES (?, ?, ?, ?, ?, ?)""")) {
+            if (surname == null) {
+                ps.setNull(1, Types.VARCHAR);
+            } else {
+                ps.setString(1, surname);
+            }
             ps.setString(2, UserRequestFactory.firstname());
             ps.setString(3, UserRequestFactory.middlename());
             ps.setString(4, passport);
             ps.setString(5, UserRequestFactory.phone());
             ps.setString(6, UserRequestFactory.address());
+            ps.executeUpdate();
+        }
+    }
+
+    private void insertApplication() throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement("""
+            INSERT INTO reg_office.applications
+            (citizenid, applicantid, kindofapplication, statusofapplication)
+            VALUES (?, ?, ?, ?)""")) {
+            ps.setLong(1, -1L);
+            ps.setLong(2, -1L);
+            ps.setString(3, "Получение свидетельства о браке");
+            ps.setString(4, "under consideration");
             ps.executeUpdate();
         }
     }

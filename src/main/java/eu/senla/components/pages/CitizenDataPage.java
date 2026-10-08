@@ -3,7 +3,6 @@ package eu.senla.components.pages;
 import eu.senla.components.pages.service.ServiceDataPage;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -53,12 +52,5 @@ public class CitizenDataPage<T extends ServiceDataPage> extends BasePage {
                 .until(ExpectedConditions.elementToBeClickable(NEXT))
                 .click();
         return nextPageFactory.get();
-    }
-
-    private void type(By locator, String value) {
-        WebElement field = new WebDriverWait(driver, TIMEOUT)
-                .until(ExpectedConditions.visibilityOfElementLocated(locator));
-        field.clear();
-        field.sendKeys(value);
     }
 }

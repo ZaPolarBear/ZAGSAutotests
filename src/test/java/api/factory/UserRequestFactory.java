@@ -53,53 +53,6 @@ public class UserRequestFactory {
                 .build();
     }
 
-    public static UserRequest birth() {
-        String surname = surname();
-        return UserRequest.builder()
-                .mode(ApplicationMode.BIRTH)
-                .personalLastName(surname)
-                .personalFirstName(firstname())
-                .personalMiddleName(middlename())
-                .personalPhoneNumber(phone())
-                .personalNumberOfPassport(passport())
-                .personalAddress(address())
-                .citizenLastName(surname)
-                .citizenFirstName(firstname())
-                .citizenMiddleName(middlename())
-                .citizenBirthDate(isoDate(pastDate()))
-                .citizenNumberOfPassport(passport())
-                .citizenGender(Gender.MALE)
-                .citizenAddress(address())
-                .birthPlace(shortText(50))
-                .birthMother(shortText(20))
-                .birthFather(shortText(20))
-                .birthGrandma(shortText(20))
-                .birthGrandpa(shortText(20))
-                .build();
-    }
-
-    public static UserRequest death() {
-        String surname = surname();
-        return UserRequest.builder()
-                .mode(ApplicationMode.DEATH)
-                .personalLastName(surname)
-                .personalFirstName(firstname())
-                .personalMiddleName(middlename())
-                .personalPhoneNumber(phone())
-                .personalNumberOfPassport(passport())
-                .personalAddress(address())
-                .citizenLastName(surname)
-                .citizenFirstName(firstname())
-                .citizenMiddleName(middlename())
-                .citizenBirthDate(isoDate(pastDate()))
-                .citizenNumberOfPassport(passport())
-                .citizenGender(Gender.MALE)
-                .citizenAddress(address())
-                .deathDateOfDeath(isoDate(pastDate()))
-                .deathPlaceOfDeath(shortText(50))
-                .build();
-    }
-
     public static String surname() {
         return truncate(RU.name().lastName(), 100);
     }
@@ -131,20 +84,16 @@ public class UserRequestFactory {
         return truncate(EN.letterify("??").toUpperCase() + EN.numerify("######"), 8);
     }
 
-    public static String shortText(int maxLength) {
-        return truncate(EN.lorem().word() + " " + EN.lorem().word(), maxLength);
-    }
-
     public static LocalDate birthDate() {
         return LocalDate.now().minusYears(ThreadLocalRandom.current().nextInt(18, 80));
     }
 
     public static LocalDate pastDate() {
-        return LocalDate.now().minusYears(ThreadLocalRandom.current().nextInt(1, 60));
+        return LocalDate.now().minusDays(ThreadLocalRandom.current().nextInt(1, 90));
     }
 
     public static LocalDate futureDate() {
-        return LocalDate.now().plusYears(ThreadLocalRandom.current().nextInt(1, 60));
+        return LocalDate.now().plusDays(ThreadLocalRandom.current().nextInt(1, 90));
     }
 
     public static String inputDate(LocalDate date) {

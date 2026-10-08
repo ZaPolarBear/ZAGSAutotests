@@ -5,7 +5,6 @@ import eu.senla.components.pages.BasePage;
 import eu.senla.components.pages.Locators;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -52,12 +51,5 @@ public class MarriageServiceDataPage extends BasePage implements ServiceDataPage
                 .until(ExpectedConditions.elementToBeClickable(NEXT))
                 .click();
         return new ApplicationStatusPage(driver);
-    }
-
-    private void type(By locator, String value) {
-        WebElement field = new WebDriverWait(driver, TIMEOUT)
-                .until(ExpectedConditions.visibilityOfElementLocated(locator));
-        field.clear();
-        field.sendKeys(value);
     }
 }

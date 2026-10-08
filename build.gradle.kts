@@ -53,38 +53,14 @@ allure {
 tasks.test {
     useJUnitPlatform()
 
-    environment(
-        "APP_USERNAME",
-        System.getenv("APP_USERNAME") ?: project.findProperty("APP_USERNAME") ?: ""
-    )
-    environment(
-        "APP_PASSWORD",
-        System.getenv("APP_PASSWORD") ?: project.findProperty("APP_PASSWORD") ?: ""
-    )
-    environment(
-        "PG_USER",
-        System.getenv("PG_USER") ?: project.findProperty("PG_USER") ?: ""
-    )
-    environment(
-        "PG_ADDRESS",
-        System.getenv("PG_ADDRESS") ?: project.findProperty("PG_ADDRESS") ?: ""
-    )
-    environment(
-        "PG_PASSWORD",
-        System.getenv("PG_PASSWORD") ?: project.findProperty("PG_PASSWORD") ?: ""
-    )
-    environment(
-        "TARGET_URL",
-        System.getenv("TARGET_URL") ?: project.findProperty("TARGET_URL") ?: ""
-    )
-    environment(
-        "SELENOID_URL",
-        System.getenv("SELENOID_URL") ?: project.findProperty("SELENOID_URL") ?: ""
-    )
-    environment(
-        "SELENOID_MODE",
-        System.getenv("SELENOID_MODE") ?: project.findProperty("SELENOID_MODE") ?: ""
-    )
+    listOf(
+        "APP_USERNAME", "APP_PASSWORD",
+        "PG_USER", "PG_ADDRESS", "PG_PASSWORD",
+        "TARGET_URL", "SELENOID_URL", "SELENOID_MODE",
+    ).forEach { name ->
+        val value = System.getenv(name) ?: project.findProperty(name)?.toString()
+        if (!value.isNullOrBlank()) environment(name, value)
+    }
     jvmArgs(
         "-javaagent:${classpath.find { it.name.contains("aspectjweaver") }?.absolutePath}"
     )

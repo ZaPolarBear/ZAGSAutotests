@@ -7,7 +7,6 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -23,9 +22,6 @@ public class ApplicationAdministrationPage extends BasePage {
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
     private static final By FIRST_ROW  = By.cssSelector(
             "table.MuiTable-root tr.MuiTableRow-root:not(.MuiTableRow-head):nth-of-type(1)");
-
-    @FindBy(xpath = "//button[contains(., 'Закрыть')]")
-    private WebElement closeButton;
 
     public ApplicationAdministrationPage(WebDriver driver) {
         super(driver);
@@ -55,19 +51,7 @@ public class ApplicationAdministrationPage extends BasePage {
         return new ApplicationRow(first);
     }
 
-    public int getMaxApplicationId() {
-        ApplicationRow top = topRow();
-        int id = top.idAsInt();
-        log.info("Верхняя строка: №={}, заявитель={}, тип={}, статус={}, id={}",
-                top.number(), top.applicant(), top.type(), top.status(), id);
-        return id;
-    }
-
-    public void close() {
-        closeButton.click();
-    }
-
-    public ApplicationAdministrationPage waitUntilTopIdGreaterThan(int lastId) {
+    public ApplicationAdministrationPage waitUntilTopIdGreaterThan(long lastId) {
         new WebDriverWait(driver, TIMEOUT)
                 .pollingEvery(Duration.ofMillis(500))
                 .until(d -> {

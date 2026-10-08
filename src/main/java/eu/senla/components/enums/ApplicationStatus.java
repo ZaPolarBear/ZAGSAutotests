@@ -2,9 +2,9 @@ package eu.senla.components.enums;
 
 public enum ApplicationStatus {
 
-    APPROVED("Одобрена",         "8, 142, 8"),   // #088e08
-    REJECTED("Отклонена",        "195, 49, 23"), // #c33117
-    PENDING("На рассмотрении",   "27, 126, 175"); // #1b7eaf
+    APPROVED("Одобрена",         "8, 142, 8"),
+    REJECTED("Отклонена",        "195, 49, 23"),
+    PENDING("На рассмотрении",   "27, 126, 175");
 
     private final String text;
     private final String rgb;

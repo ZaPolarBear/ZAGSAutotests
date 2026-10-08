@@ -14,7 +14,6 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -61,6 +60,7 @@ public class UserApiClient {
 
         assertNotNull(response, "Пустой ответ. Тело: " + body);
         assertNotNull(response.getData());
+        attachResponse(raw);
         return response;
     }
 
@@ -82,8 +82,10 @@ public class UserApiClient {
         String body = response.asPrettyString();
 
         if (status < 200 || status >= 300) {
-            throw new ApiException(status,
-                    "Ожидался 2xx, получен " + status + ". Тело ответа:\n" + body);
+            throw new ApiException(
+                    status,
+                    "Ожидался 2xx, получен " + status + ". Тело ответа:\n" + body
+            );
         }
 
         if ("error".equalsIgnoreCase(response.jsonPath().getString("code"))) {
@@ -94,7 +96,7 @@ public class UserApiClient {
     }
 
     @Attachment(value = "response.json", type = "application/json")
-    private void attachResponse(Response response) {
-        response.asPrettyString();
+    private String attachResponse(Response response) {
+        return response.asPrettyString();
     }
 }

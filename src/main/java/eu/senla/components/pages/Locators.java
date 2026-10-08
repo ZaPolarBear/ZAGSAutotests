@@ -13,7 +13,7 @@ public final class Locators {
     }
 
     public static By byExactLabel(String labelText) {
-        String safe = labelText.replace("'", "&apos;"); // защита от апострофов
+        String safe = labelText.replace("'", "&apos;");
         return By.xpath(
                 "//input[@id=//label[" +
                         "normalize-space(.)='" + safe + "' or " +
