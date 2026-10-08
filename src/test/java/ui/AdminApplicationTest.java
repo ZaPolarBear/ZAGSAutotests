@@ -17,8 +17,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.openqa.selenium.HasAuthentication;
 import org.openqa.selenium.UsernameAndPassword;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.remote.Augmenter;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,12 +31,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AdminApplicationTest {
 
-    private ChromeDriver driver;
+    private WebDriver driver;
 
     @BeforeAll
     void setUpDriver() {
-        driver = DriverSingleton.getInstance();
-        driver.register(UsernameAndPassword.of(TestData.USERNAME, TestData.PASSWORD));
+        driver = new Augmenter().augment(DriverSingleton.getInstance());
+        ((HasAuthentication) driver)
+                .register(UsernameAndPassword.of(TestData.USERNAME, TestData.PASSWORD));
     }
 
     @BeforeEach
