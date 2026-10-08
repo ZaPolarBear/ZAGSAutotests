@@ -77,6 +77,14 @@ tasks.test {
         "TARGET_URL",
         System.getenv("TARGET_URL") ?: project.findProperty("TARGET_URL") ?: ""
     )
+    environment(
+        "SELENOID_URL",
+        System.getenv("SELENOID_URL") ?: project.findProperty("SELENOID_URL") ?: ""
+    )
+    environment(
+        "SELENOID_MODE",
+        System.getenv("SELENOID_MODE") ?: project.findProperty("SELENOID_MODE") ?: ""
+    )
     jvmArgs(
         "-javaagent:${classpath.find { it.name.contains("aspectjweaver") }?.absolutePath}"
     )
